@@ -22,10 +22,10 @@ public class Serv {
     public static void main(String[] args) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
         
         // one argument <server_port> - 9496
-        // int serverPort = Integer.parseInt(args[0]);
+        int serverPort = Integer.parseInt(args[0]);
 
         // Server port
-        int serverPort = 9496;
+        // int serverPort = 9496;
 
         // Server voterinfo file
         // String voterinfoFile = "voterinfo.txt";
@@ -97,6 +97,7 @@ public class Serv {
                     
                     // If the user is authenticated then we are creating a new thread with the socket and username
                     // We are creating new thread to handle multiple clients
+                    // We are sending socket and username as parameters
                     if (authenticated) {
                         new Thread(new ElectionServerHandler(socket,cred[0])).start();
                     }
@@ -136,7 +137,7 @@ public class Serv {
      * @params: name, regNum, password
      * returns true if authenticated successfully else false
      */
-    private static boolean authenticateUser(String name, String regNum, String password) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    private static boolean authenticateUser(String name, String registrationNumber, String password) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         // Read the "voterinfo.txt" file
         // "voterinfo.txt" file contains all the user details
         BufferedReader br = new BufferedReader(new FileReader("voterinfo.txt"));
@@ -144,9 +145,10 @@ public class Serv {
         String storedPassword = null;
         while ((line = br.readLine()) != null) {
             String[] fields = line.split(" ");
-            if (fields[0].equals(name) && fields[1].equals(regNum)) {
+            if (fields[0].equals(name) && fields[1].equals(registrationNumber)) {
                 // Removing "E(K," and ")" from the stored password
-                storedPassword = fields[3].substring(2, fields[3].length() - 2);
+                // storedPassword = fields[3].substring(2, fields[3].length() - 2);
+                storedPassword = fields[2];
                 break;
             }
         }
@@ -157,14 +159,14 @@ public class Serv {
             return false;
         }
 
-        // Encrypt the password using the symmetric key K
+        // Encrypt the received password using the symmetric key
         SecretKey secretKey = loadSymmetricKey();
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
         // Encrypt stored password
-        byte[] encryptedStoredPasswordBytes = cipher.doFinal(hexStringToByteArray(storedPassword));
-        String encryptedStoredPassword = new String(encryptedStoredPasswordBytes, StandardCharsets.UTF_8);
+        // byte[] encryptedStoredPasswordBytes = cipher.doFinal(hexStringToByteArray(storedPassword));
+        // String encryptedStoredPassword = new String(encryptedStoredPasswordBytes, StandardCharsets.UTF_8);
 
         // Encrypt received password
         byte[] encryptedReceivedPasswordBytes = cipher.doFinal(hexStringToByteArray(password));
@@ -173,7 +175,16 @@ public class Serv {
         // System.out.println("encryptedStoredPassword-->  "+encryptedStoredPassword);
         // System.out.println("encryptedReceivedPassword-->  "+encryptedReceivedPassword);
 
-        return encryptedStoredPassword.equals(encryptedReceivedPassword);
+
+        // String AlicePassword = new String(cipher.doFinal(hexStringToByteArray("1234")), StandardCharsets.UTF_8);
+        // System.out.println("AlicePassword-->  "+AlicePassword);
+        // String BobPassword = new String(cipher.doFinal(hexStringToByteArray("5678")), StandardCharsets.UTF_8);
+        // System.out.println("BobPassword-->  "+BobPassword);
+        // String TomPassword = new String(cipher.doFinal(hexStringToByteArray("9012")), StandardCharsets.UTF_8);
+        // System.out.println("TomPassword-->  "+TomPassword);
+
+        // return encryptedStoredPassword.equals(encryptedReceivedPassword);
+        return storedPassword.equals(encryptedReceivedPassword);
 
     }
     
@@ -324,13 +335,11 @@ public class Serv {
 
                                 // If the voter selected Chris, incrementing his vote count
                                 if (votedData[2].equals("Chris")) {
-                                    // int votes = Integer.parseInt(chris[1]) + 1;
                                     chris[1] = Integer.toString(Integer.parseInt(chris[1]) + 1);
                                 }
 
                                 // If the voter selected Linda, incrementing her vote count
                                 else if (votedData[2].equals("Linda")) {
-                                    // int votes = Integer.parseInt(linda[1]) + 1;
                                     linda[1] = Integer.toString(Integer.parseInt(linda[1]) + 1);
                                 }
 
@@ -417,7 +426,6 @@ public class Serv {
                                     numVoters++;
                                     line = reader.readLine();
                                 }
-                                // reader.close();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -483,8 +491,8 @@ public class Serv {
                     // EXIT
                     // Close connection
                     else if (command.equals("4")) {
-                        System.out.println("Closing Voting Booth");
-                        System.out.println("Good Bye!");
+                        System.out.println("Closing Voting Booth for "+username);
+                        System.out.println("Good Bye "+username+"!");
                         break;
                     }
                     // Invalid command

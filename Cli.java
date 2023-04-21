@@ -24,12 +24,12 @@ public class Cli{
      */
     public static void main(String[] args) {
         // Server Variable
-        String serverDomain = "localhost";
-        // String serverDomain = String.valueOf(args[0]);
+        // String serverDomain = "localhost";
+        String serverDomain = String.valueOf(args[0]);
         
         // Port Variable
-        int serverPort = 9496;
-        // int serverPort = Integer.parseInt(args[1]);
+        // int serverPort = 9496;
+        int serverPort = Integer.parseInt(args[1]);
 
         String id ="";
 
@@ -78,7 +78,7 @@ public class Cli{
                 String response = "";
                 if(serverScanner.hasNext()){
                     response=serverScanner.nextLine();
-                    System.out.println("Response from server --> "+response);
+                    // System.out.println("Response from server --> "+response);
                 }
                 // 0 - Invalid name, registration number, or password
                 // 1 - Authentication Successful
@@ -93,8 +93,8 @@ public class Cli{
 
             // Send and receive commands from the server
             while (true) {
-                System.out.println("Please enter a number(1-3) \n1. Vote \n2. View election result \n3. My vote history \n4. Exit");                
-                
+                System.out.println("Please enter a number(1-3) \n1. Vote \n2. View election result \n3. My vote history \n4. Exit");
+
                 // Reading command
                 String command = scanner.nextLine();
 
@@ -106,7 +106,7 @@ public class Cli{
                     String voteResponse = "";
                     if(serverScanner.hasNext()){
                         voteResponse=serverScanner.nextLine();
-                        System.out.println("voteResponse from server --> "+voteResponse);
+                        // System.out.println("voteResponse from server --> "+voteResponse);
                     }
                     // If response from server is 1 then we display list of candidates for voting
                     if (voteResponse.equals("1")) {
@@ -114,15 +114,18 @@ public class Cli{
                         // Reading input from user
                         command = scanner.nextLine();
                         // We are appending "V <username> <candidate_name>" to the command
-                        // to receive it at the server and update it accordingly
+                        // and sending it to the server
                         command = command.equals("1")?"Chris":"Linda";
                         command = "V "+ id +" "+command;
-                        // Command sent to the server (1 or 2)
+                        
+                        // Sending Command to the server
                         writer.println(command);
                         writer.flush();
                         // command="";
                         System.out.println("Thank You for Voting!!");
-                    }else{
+                    }
+                    // Add else if condition to check if the response is 0
+                    else if (voteResponse.equals("0")){
                         System.out.println("you have already voted");
                     }
                                         
@@ -136,14 +139,14 @@ public class Cli{
                     String resultResponse = "";
                     if(serverScanner.hasNext()){
                         resultResponse=serverScanner.nextLine();
-                        System.out.println("resultResponse from server --> "+resultResponse);
+                        // System.out.println("resultResponse from server --> "+resultResponse);
                     }
                     if (resultResponse.equals("0")) {
                         System.out.println("The result is not available");
                     }
                     else{
-                        // Formating received response
                         // System.out.println(resultResponse);
+                        // Formating received response
                         /* <Candidate’s name> Win
                             Chris <the total number of votes>
                             Linda <the total number of votes> */
@@ -168,7 +171,6 @@ public class Cli{
                         System.out.println("You haven't voted yet, please vote");
                     }
                     else{
-                        // Format this response accordingly
                         System.out.println(voteHistoryResponse);
                     }
                 }
