@@ -172,19 +172,25 @@ public class Serv {
         byte[] encryptedReceivedPasswordBytes = cipher.doFinal(hexStringToByteArray(password));
         String encryptedReceivedPassword = new String(encryptedReceivedPasswordBytes, StandardCharsets.UTF_8);
 
+        // Hashing the encrypted password using SHA-1
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+        byte[] hashedBytes = messageDigest.digest(encryptedReceivedPassword.getBytes());
+        String hashedReceivedPassword = Base64.getEncoder().encodeToString(hashedBytes);
+
+        // System.out.println(hashedReceivedPassword);
+        
         // System.out.println("encryptedStoredPassword-->  "+encryptedStoredPassword);
         // System.out.println("encryptedReceivedPassword-->  "+encryptedReceivedPassword);
 
-
         // String AlicePassword = new String(cipher.doFinal(hexStringToByteArray("1234")), StandardCharsets.UTF_8);
-        // System.out.println("AlicePassword-->  "+AlicePassword);
+        // System.out.println("AlicePassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(AlicePassword.getBytes())));
         // String BobPassword = new String(cipher.doFinal(hexStringToByteArray("5678")), StandardCharsets.UTF_8);
-        // System.out.println("BobPassword-->  "+BobPassword);
+        // System.out.println("BobPassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(BobPassword.getBytes())));
         // String TomPassword = new String(cipher.doFinal(hexStringToByteArray("9012")), StandardCharsets.UTF_8);
-        // System.out.println("TomPassword-->  "+TomPassword);
+        // System.out.println("TomPassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(TomPassword.getBytes())));
 
         // return encryptedStoredPassword.equals(encryptedReceivedPassword);
-        return storedPassword.equals(encryptedReceivedPassword);
+        return storedPassword.equals(hashedReceivedPassword);
 
     }
     
