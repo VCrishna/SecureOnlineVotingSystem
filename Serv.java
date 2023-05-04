@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.LocalDateTime;
@@ -146,8 +145,6 @@ public class Serv {
         while ((line = br.readLine()) != null) {
             String[] fields = line.split(" ");
             if (fields[0].equals(name) && fields[1].equals(registrationNumber)) {
-                // Removing "E(K," and ")" from the stored password
-                // storedPassword = fields[3].substring(2, fields[3].length() - 2);
                 storedPassword = fields[2];
                 break;
             }
@@ -159,49 +156,31 @@ public class Serv {
             return false;
         }
 
-        // Encrypt the received password using the symmetric key
+        // Hashing using SHA-1
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+        byte[] hashedReceivedPasswordBytes = messageDigest.digest(password.getBytes());
+
+        // Encrypting the hashed password using symmetric key
         SecretKey secretKey = loadSymmetricKey();
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        String encryptedReceivedPassword = bytesToHexString(cipher.doFinal(hashedReceivedPasswordBytes));
 
-        // Encrypt stored password
-        // byte[] encryptedStoredPasswordBytes = cipher.doFinal(hexStringToByteArray(storedPassword));
-        // String encryptedStoredPassword = new String(encryptedStoredPasswordBytes, StandardCharsets.UTF_8);
-
-        // Encrypt received password
-        byte[] encryptedReceivedPasswordBytes = cipher.doFinal(hexStringToByteArray(password));
-        String encryptedReceivedPassword = new String(encryptedReceivedPasswordBytes, StandardCharsets.UTF_8);
-
-        // Hashing the encrypted password using SHA-1
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-        byte[] hashedBytes = messageDigest.digest(encryptedReceivedPassword.getBytes());
-        String hashedReceivedPassword = Base64.getEncoder().encodeToString(hashedBytes);
-
-        // System.out.println(hashedReceivedPassword);
+        // System.out.println("Alice--> "+bytesToHexString(cipher.doFinal(messageDigest.digest("1234".getBytes()))));
+        // System.out.println("Bob--> "+bytesToHexString(cipher.doFinal(messageDigest.digest("5678".getBytes()))));
+        // System.out.println("Tom--> "+bytesToHexString(cipher.doFinal(messageDigest.digest("9012".getBytes()))));
         
-        // System.out.println("encryptedStoredPassword-->  "+encryptedStoredPassword);
-        // System.out.println("encryptedReceivedPassword-->  "+encryptedReceivedPassword);
-
-        // String AlicePassword = new String(cipher.doFinal(hexStringToByteArray("1234")), StandardCharsets.UTF_8);
-        // System.out.println("AlicePassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(AlicePassword.getBytes())));
-        // String BobPassword = new String(cipher.doFinal(hexStringToByteArray("5678")), StandardCharsets.UTF_8);
-        // System.out.println("BobPassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(BobPassword.getBytes())));
-        // String TomPassword = new String(cipher.doFinal(hexStringToByteArray("9012")), StandardCharsets.UTF_8);
-        // System.out.println("TomPassword-->  "+Base64.getEncoder().encodeToString(messageDigest.digest(TomPassword.getBytes())));
-
-        // return encryptedStoredPassword.equals(encryptedReceivedPassword);
-        return storedPassword.equals(hashedReceivedPassword);
+        return storedPassword.equals(encryptedReceivedPassword);
 
     }
     
-    private static byte[] hexStringToByteArray(String hexString) {
-        int length = hexString.length();
-        byte[] byteArray = new byte[length / 2];
-        for (int i = 0; i < length; i += 2) {
-            byteArray[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
-                    + Character.digit(hexString.charAt(i+1), 16));
+    /* Byte Array to HexString return String */
+    private static String bytesToHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
         }
-        return byteArray;
+        return sb.toString();
     }
     
     // We can create new Threads for this class
@@ -217,7 +196,7 @@ public class Serv {
 
         @Override
         public void run() {
-            System.out.println("new thread created!");
+            System.out.println("New Thread Created!");
             try {
                 System.out.println("Hello from server!");
                 InputStream inputStream = socket.getInputStream();
@@ -388,7 +367,7 @@ public class Serv {
                         -> Otherwise, the server sends the client the candidate who wins the election
                            and the number of votes each candidate got. The client then displays the
                            results with the following format:
-
+                           
                             <Candidate’s name> Win
                             Chris <the total number of votes>
                             Linda <the total number of votes>
@@ -508,7 +487,6 @@ public class Serv {
                         clientWriter.flush();
                     }
                 }
-
                 // Closing the socket and all the streams
                 inputStream.close();
                 outputStream.close();
