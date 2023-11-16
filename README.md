@@ -1,8 +1,7 @@
 Sai Krishna Varakala
-svaraka1@binghamton.edu
 java
 
-Tested on remote.cs.binghamton.edu
+Tested on remote
 
 To Build the program: make
 
@@ -24,7 +23,7 @@ Tom             1154571           9012
 
 After authentication, Main menu will be displayed and user can select any option shown in the menu.
 
-Passcode for SSL Certificate: 123456
+Passcode for SSL Certificate: xxxxxx
 
 Server can handle any number of clients parallely. All the users can connect to the server at the same time
 
